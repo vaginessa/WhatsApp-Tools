@@ -2,6 +2,8 @@
 
 **Contact with me: me [at] mgp25.com or @_mgp25**
 
+
+**IMPORTANT: Be sure to use the newer code from my repo WhatsAPI-Spanish or WhatsAPI from Shirioko **
 ----------
 ### Instrucciones y líneas básicas 
 
