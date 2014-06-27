@@ -61,6 +61,10 @@ class WhatsMediaUploader
         $boundary = "zzXXzzYYzzXXzzQQ";
         $contentlength = 0;
 
+        if(is_array($to)) {
+            $to = implode(',', $to);
+        }
+
         $hBAOS = "--" . $boundary . "\r\n";
         $hBAOS .= "Content-Disposition: form-data; name=\"to\"\r\n\r\n";
         $hBAOS .= $to . "\r\n";
@@ -80,7 +84,7 @@ class WhatsMediaUploader
         $POST = "POST " . $url . "\r\n";
         $POST .= "Content-Type: multipart/form-data; boundary=" . $boundary . "\r\n";
         $POST .= "Host: " . $host . "\r\n";
-        $POST .= "User-Agent: WhatsApp/2.3.53 S40Version/14.26 Device/Nokia302\r\n";
+        $POST .= "User-Agent: " . WhatsProt::WHATSAPP_USER_AGENT . "\r\n";
         $POST .= "Content-Length: " . $contentlength . "\r\n\r\n";
 
         return self::sendData($host, $POST, $hBAOS, $filepath, $mediafile, $fBAOS);
