@@ -2,7 +2,9 @@
 
 **Contact with me: me [at] mgp25.com or @_mgp25**
 
-**IMPORTANT: Be sure to use the newer code from my repo WhatsAPI-Spanish or WhatsAPI from Shirioko**
+**IMPORTANT: Be sure to use the newer code from my repo [WhatsAPI-Spanish](https://github.com/mgp25/WhatsAPI-Spanish) or WhatsAPI from Shirioko**
+
+- **Check [WA Tools](http://watools.es), a website i made, send messages, check your whatsapp status, see others profile picture, last seen time, status and much more!**
 
 ----------
 ### Instrucciones y líneas básicas 
