@@ -9,7 +9,7 @@
 ----------
 ### Instrucciones y líneas básicas 
 
-whatsprot.class.php is required almost for all scripts (Telling this for beginners...)
+whatsprot.class.php is required for all scripts (Telling this for beginners...)
 
 
 **Registering a new number / Registrando un nuevo numero**
@@ -143,4 +143,25 @@ $w->eventManager()->bind("onGetProfilePicture", "onGetProfilePicture");
 $w->sendGetProfilePicture($target, true);
 ```
 
-En construcción :D
+**Create a group chat / crear un chat de grupo**
+
+```php
+$participants = array("34123456789", "34987654321");
+$w->sendGroupsChatCreate("My new Group chat", $participants);
+```
+
+**Sending messages to a group chat / mandar mensajes a un chat de grupo**
+
+```php
+// $gId should be like MyNumber-1405367897, the last number you can capture with and event and $w->sendGetGroups();
+$w->sendMessage($gId, $msg);
+```
+
+**Send broadcast message / mandar un difundido**
+
+```php
+// Only synced user will receive broadcast messages
+$targets = array("34123456789", "34987654321");
+$message = "This is broadcast message";
+$w->sendBroadcastMessage($targets, $message);
+```
