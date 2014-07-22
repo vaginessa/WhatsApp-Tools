@@ -2,6 +2,8 @@
 if($argc > 1){
 	$csv = fopen($_SERVER['argv'][1], "r");
 	$existing = fopen("existing.csv","wb");
+	//TODO
+	//This works only with USA number, to make this script work with all numbers, we have to dissect the number and extract the cc
 	$cc = 1;
 
 	$opts = array(
