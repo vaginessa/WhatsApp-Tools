@@ -53,6 +53,7 @@ class WhatsProt
      * Property declarations.
      */
     protected $accountInfo;             // The AccountInfo object.
+    protected $challengeFilename = 'nextChallenge.dat';
     protected $challengeData;           //
     protected $debug;                   // Determines whether debug mode is on or off.
     protected $event;                   // An instance of the WhatsAppEvent class.
@@ -98,13 +99,22 @@ class WhatsProt
         $this->phoneNumber = $number;
         if (!$this->checkIdentity($identity)) {
             //compute sha identity hash
-            $this->identity = $this->buildIdentity($number, $identity);
+            $this->identity = $this->buildIdentity($identity);
         } else {
             //use provided identity hash
             $this->identity = $identity;
         }
         $this->name = $nickname;
         $this->loginStatus = static::DISCONNECTED_STATUS;
+    }
+
+    /**
+     * If you need use diferent challenge fileName you can use this
+     *
+     * @param string $filename
+     */
+    public function setChallengeName($filename){
+        $this->challengeFilename = $filename;
     }
 
     /**
@@ -458,7 +468,7 @@ class WhatsProt
     public function loginWithPassword($password)
     {
         $this->password = $password;
-        $challengeData = @file_get_contents("nextChallenge.dat");
+        $challengeData = @file_get_contents($this->challengeFilename);
         if($challengeData) {
             $this->challengeData = $challengeData;
         }
@@ -515,12 +525,12 @@ class WhatsProt
      * @param  string  $path          URL or local path to the audio file to send
      * @param  bool $storeURLmedia Keep a copy of the audio file on your server
      */
-    public function sendBroadcastAudio($targets, $path, $storeURLmedia = false)
+    public function sendBroadcastAudio($targets, $path, $storeURLmedia = false, $fsize = 0, $fhash = "")
     {
         if (!is_array($targets)) {
             $targets = array($targets);
         }
-        $this->sendMessageAudio($targets, $path, $storeURLmedia);
+        $this->sendMessageAudio($targets, $path, $storeURLmedia, $fsize, $fhash);
     }
 
     /**
@@ -535,12 +545,12 @@ class WhatsProt
      * @param  string  $path          URL or local path to the image file to send
      * @param  bool $storeURLmedia Keep a copy of the audio file on your server
      */
-    public function sendBroadcastImage($targets, $path, $storeURLmedia = false)
+    public function sendBroadcastImage($targets, $path, $storeURLmedia = false, $fsize = 0, $fhash = "")
     {
         if (!is_array($targets)) {
             $targets = array($targets);
         }
-        $this->sendMessageImage($targets, $path, $storeURLmedia);
+        $this->sendMessageImage($targets, $path, $storeURLmedia, $fsize, $fhash);
     }
 
     /**
@@ -602,12 +612,12 @@ class WhatsProt
      * @param  string  $path          URL or local path to the video file to send
      * @param  bool $storeURLmedia Keep a copy of the audio file on your server
      */
-    public function sendBroadcastVideo($targets, $path, $storeURLmedia = false)
+    public function sendBroadcastVideo($targets, $path, $storeURLmedia = false, $fsize = 0, $fhash = "")
     {
         if (!is_array($targets)) {
             $targets = array($targets);
         }
-        $this->sendMessageVideo($targets, $path, $storeURLmedia);
+        $this->sendMessageVideo($targets, $path, $storeURLmedia, $fsize, $fhash);
     }
 
     /**
@@ -1000,9 +1010,16 @@ class WhatsProt
      */
     public function sendMessageAudio($to, $filepath, $storeURLmedia = false)
     {
-        $allowedExtensions = array('3gp', 'caf', 'wav', 'mp3', 'wma', 'ogg', 'aif', 'aac', 'm4a');
-        $size = 10 * 1024 * 1024; // Easy way to set maximum file size for this media type.
-        return $this->sendCheckAndSendMedia($filepath, $size, $to, 'audio', $allowedExtensions, $storeURLmedia);
+    	if ($fsize==0 || $fhash == "")
+    	{
+        	$allowedExtensions = array('3gp', 'caf', 'wav', 'mp3', 'wma', 'ogg', 'aif', 'aac', 'm4a');
+        	$size = 10 * 1024 * 1024; // Easy way to set maximum file size for this media type.
+        	return $this->sendCheckAndSendMedia($filepath, $size, $to, 'audio', $allowedExtensions, $storeURLmedia);
+        }
+        else{
+    		$this->sendRequestFileUpload($fhash, 'audio', $fsize, $filepath, $to);
+    		return true;   
+    	}
     }
 
     /**
@@ -1024,13 +1041,23 @@ class WhatsProt
      * @param  string $filepath
      *   The url/uri to the image file.
      * @param  bool $storeURLmedia Keep copy of file
+     * @param  int $fsize size of the media file
+     * @param string $fhash base64 hash of the media file
+     *
      * @return bool
      */
-    public function sendMessageImage($to, $filepath, $storeURLmedia = false)
+    public function sendMessageImage($to, $filepath, $storeURLmedia = false, $fsize = 0, $fhash = "")
     {
-        $allowedExtensions = array('jpg', 'jpeg', 'gif', 'png');
-        $size = 5 * 1024 * 1024; // Easy way to set maximum file size for this media type.
-        return $this->sendCheckAndSendMedia($filepath, $size, $to, 'image', $allowedExtensions, $storeURLmedia);
+    	if ($fsize==0 || $fhash == "")
+    	{
+        	$allowedExtensions = array('jpg', 'jpeg', 'gif', 'png');
+        	$size = 5 * 1024 * 1024; // Easy way to set maximum file size for this media type.
+        	return $this->sendCheckAndSendMedia($filepath, $size, $to, 'image', $allowedExtensions, $storeURLmedia);
+        }
+        else{
+        $this->sendRequestFileUpload($fhash, 'image', $fsize, $filepath, $to);
+    	return true;  
+    	}
     }
 
     /**
@@ -1092,13 +1119,23 @@ class WhatsProt
      * @param string $filepath
      *   The url/uri to the MP4/MOV video.
      * @param  bool $storeURLmedia Keep a copy of media file.
+	 * @param  int $fsize size of the media file
+     * @param string $fhash base64 hash of the media file
+     * 
      * @return bool
      */
-    public function sendMessageVideo($to, $filepath, $storeURLmedia = false)
+    public function sendMessageVideo($to, $filepath, $storeURLmedia = false, $fsize = 0, $fhash = "")
     {
-        $allowedExtensions = array('3gp', 'mp4', 'mov', 'avi');
-        $size = 20 * 1024 * 1024; // Easy way to set maximum file size for this media type.
-        return $this->sendCheckAndSendMedia($filepath, $size, $to, 'video', $allowedExtensions, $storeURLmedia);
+    	if ($fsize==0 || $fhash == "")
+    	{
+        	$allowedExtensions = array('3gp', 'mp4', 'mov', 'avi');
+        	$size = 20 * 1024 * 1024; // Easy way to set maximum file size for this media type.
+        	return $this->sendCheckAndSendMedia($filepath, $size, $to, 'video', $allowedExtensions, $storeURLmedia);
+        }
+        else{
+    		$this->sendRequestFileUpload($fhash, 'video', $fsize, $filepath, $to);
+    		return true;   
+    	}
     }
 
     /**
@@ -1632,9 +1669,9 @@ class WhatsProt
      * @param  string $identity A user string
      * @return string           Correctly formatted identity
      */
-    protected function buildIdentity($number, $salt)
+    protected function buildIdentity($identity)
     {
-        return strtolower(urlencode(sha1(strrev($salt + $number), true)));
+        return strtolower(urlencode(sha1($identity, true)));
     }
 
     protected function checkIdentity($identity)
@@ -1864,7 +1901,7 @@ class WhatsProt
         elseif ($node->getTag() == "success") {
             $this->loginStatus = static::CONNECTED_STATUS;
             $challengeData = $node->getData();
-            file_put_contents("nextChallenge.dat", $challengeData);
+            file_put_contents($this->challengeFilename, $challengeData);
             $this->writer->setKey($this->outputKey);
         } elseif($node->getTag() == "failure")
         {
@@ -2485,7 +2522,7 @@ class WhatsProt
             $url = $duplicate->getAttribute("url");
             $filesize = $duplicate->getAttribute("size");
 //            $mimetype = $duplicate->getAttribute("mimetype");
-//            $filehash = $duplicate->getAttribute("filehash");
+            $filehash = $duplicate->getAttribute("filehash");
             $filetype = $duplicate->getAttribute("type");
 //            $width = $duplicate->getAttribute("width");
 //            $height = $duplicate->getAttribute("height");
@@ -2510,7 +2547,7 @@ class WhatsProt
             $url = $json->url;
             $filesize = $json->size;
 //            $mimetype = $json->mimetype;
-//            $filehash = $json->filehash;
+            $filehash = $json->filehash;
             $filetype = $json->type;
 //            $width = $json->width;
 //            $height = $json->height;
@@ -2523,6 +2560,7 @@ class WhatsProt
         $mediaAttribs["url"] = $url;
         $mediaAttribs["file"] = $filename;
         $mediaAttribs["size"] = $filesize;
+        $mediaAttribs["hash"] = $filehash;
 
         $filepath = $this->mediaQueue[$id]['filePath'];
         $to = $this->mediaQueue[$id]['to'];
@@ -2553,6 +2591,7 @@ class WhatsProt
             $url,
             $filename,
             $filesize,
+            $filehash,
             $icon
         );
         return true;
@@ -2893,7 +2932,7 @@ class WhatsProt
 		$extension = end(explode(".", $filepath));
 		$newImageName = rand(0, 100000);
 		$imagePath = static::PICTURES_FOLDER."/".$newImageName.".jpg";
-		if($extension == jpg){
+		if($extension == 'jpg'){
 			copy($filepath, $imagePath);
 			$filepath = $imagePath;
 		}

@@ -32,22 +32,17 @@
  $debug = false;
  $contacts = $_POST["pais"].$_POST["numero"];
  $msg = $_POST["mensaje"];
- $msgid = time()."-1";
  set_time_limit(10);
-require_once 'whatsprot.class.php';
+ require_once '/src/whatsprot.class.php';
 
 
 
-$nickname = "WA Tools";                           // This is the username (or nickname) displayed by WhatsApp clients.
-$target = $contacts;                 // Destination telephone number including the country code without '+' or '00'.
+$nickname = "WA Tools";
+$target = $contacts;
  
- 
-require_once "contacts.php";
-
 $w = new WhatsProt($username, $identity, $nickname, $debug);
 $w->connect();
 
-// Now loginWithPassword function sends Nickname and (Available) Presence
 $w->loginWithPassword($password);
 
 if($msg!=""){
@@ -57,13 +52,6 @@ $w->sendMessage($contacts , "Mensaje enviado desde http://watools.es");
 
 }
 
-try {
-    $sync = new WhatsAppContactSync($username, $password, $contacts, $debug);
-    $res = $sync->executeSync();
-
-} catch (Exception $e) {
-    die("Error: " . $e->GetMessage());
-}
 function onGetRequestLastSeen($username, $msgid, $seconds)
 {
 	//echo "Received last seen seconds: '$seconds'";
@@ -102,11 +90,6 @@ function onGetRequestLastSeen($username, $msgid, $seconds)
 $w->eventManager()->bind('onGetRequestLastSeen', 'onGetRequestLastSeen');
 $w->sendGetRequestLastSeen($contacts);
 
-//foreach ($res as $contact) {
- //   var_dump($contact);
-//}
-
-
 
 //This function only needed to show how eventmanager works.
 function onGetProfilePicture($from, $target, $type, $data)
@@ -133,11 +116,6 @@ function onGetProfilePicture($from, $target, $type, $data)
 }
 
 
-//Create the whatsapp object and setup a connection.
-
-
-//Retrieve large profile picture. Output is in /src/php/pictures/ (you need to bind a function
-//to the event onProfilePicture so the script knows what to do.
 $w->eventManager()->bind("onGetProfilePicture", "onGetProfilePicture");
 $w->sendGetProfilePicture($target, true);
  

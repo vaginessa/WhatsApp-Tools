@@ -85,7 +85,8 @@ function preprocessProfilePicture($path)
 
 function createIcon($file)
 {
-    if (extension_loaded('gd')) {
+	
+    if ((extension_loaded('gd')) && (file_exists($file))) {
         return createIconGD($file);
     } else {
         return giftThumbnail();

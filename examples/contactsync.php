@@ -1,10 +1,7 @@
 <?php
 set_time_limit(30);
 
-require_once("whatsprot.class.php");
-
-// Way to use it/Como usarlo:
-// contactsync.php?phone=YOURPHONE&pass=YOURPASSWORD&u[]=NUMBER1&u[]=NUMBER2  ...
+require_once("../src/whatsprot.class.php");
 
 $username = $_GET["phone"];
 $password = $_GET["pass"];
