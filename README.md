@@ -165,3 +165,16 @@ $targets = array("34123456789", "34987654321");
 $message = "This is broadcast message";
 $w->sendBroadcastMessage($targets, $message);
 ```
+
+**Send video message / mandar un video**
+
+```php
+$target = "34123456789";
+pathToVideo = ""; // This could be url or path to video.
+$w->sendMessageVideo($target, $pathToVideo);
+// If you have already the video size and hash, you can send it without re-uploading it to whatsapp servers
+$w->sendMessageVideo($to, $filepath, false, $fsize, $fhash);
+
+// This also works with:
+// $w->sendMessageAudio and $w->sendMessageImage
+```
